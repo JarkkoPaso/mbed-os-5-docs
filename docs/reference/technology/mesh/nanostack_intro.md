@@ -2,9 +2,9 @@
 
 Nanostack library implements 6LoWPAN-based wireless mesh protocols like:
 
- * [Wi-SUN](../reference/wisun-tech.html),
- * [Thread](../reference/thread-tech.html) and
- * [6LoWPAN-ND](../reference/6LoWPAN-ND-tech.html).
+ * [Wi-SUN](../../reference/wisun-tech.html),
+ * [Thread](../../reference/thread-tech.html) and
+ * [6LoWPAN-ND](../../reference/6LoWPAN-ND-tech.html).
  
  Nanostack library requires the following Mbed OS components to operate:
  
