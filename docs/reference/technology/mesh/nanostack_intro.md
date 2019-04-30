@@ -1,9 +1,24 @@
-## Nanostack
+<h1 id="nanostack-introduction-tech">Nanostack Introduction</h1>
 
-This chapter introduces the _6LoWPAN stack architecture_. It contains the following sections:
+Nanostack library implements 6LoWPAN-based wireless mesh protocols like:
+
+ * [Wi-SUN](../reference/wisun-tech.html),
+ * [Thread](../reference/thread-tech.html) and
+ * [6LoWPAN-ND](../reference/6LoWPAN-ND-tech.html).
+ 
+ Nanostack library requires the following Mbed OS components to operate:
+ 
+  * IEEE 802.15.4 based radio driver.
+  * mbedtls
+  * mbed-trace.
+  * nanostack-libservice.
+  * mbed-coap.
+ 
+This chapter introduces the Nanostack architecture. It contains the following sections:
 
 - [Architecture](#architecture).
 - [6LoWPAN stack](#6lowpan-stack).
+- [Networking](#networking).
 
 ### Architecture
 
@@ -19,7 +34,7 @@ The combination of 6LoWPAN stack and 6LoWPAN border router _Access Point_ (AP) s
 
 ### 6LoWPAN stack
 
-The 6LoWPAN stack is modular in design and uses an extremely lightweight event environment that allows the developer to run the stack completely in standalone mode without a need for a third-party _Operating System_ (OS). Additional benefits of the model are lower hardware requirements in the terms of flash and RAM usage. This approach significantly reduces integration effort and, thus, reduces your time-to-market. The stack can also be used in a configuration so that the developer can run it as a task or thread, for example, within a full _Real-time Operating System_ (RTOS). However, this will inevitably increase the system resource requirement because additional resources are required by the RTOS.
+The 6LoWPAN stack is modular in design and uses an extremely lightweight event environment internally. Additional benefits of the model are lower hardware requirements in the terms of flash and RAM usage. 
 
 The stack architecture can be divided into four high-level components:
 
@@ -34,21 +49,21 @@ These components are illustrated in _Figure 1-2_.
 
 ![stack-arc](https://s3-us-west-2.amazonaws.com/mbed-os-docs-images/6lowpan_stack_architecture.png)
 
-<span class="notes">**Note**: For simplicity, the event core is shown to be part of the same component, alongside  the protocol modules.</span>
+<span class="notes">**Note**: For simplicity, the event core is shown to be part of the same component, alongside the protocol modules.</span>
 
 #### Event core
 
-The event core is responsible for the low level events, scheduling and system timer functions. The core module provides all the basic functionality that the rest of the modules need  (with the exception of the application modules) and is undertaken with a low resource requirement. The design objective has been to reserve and use minimal resources of the hardware platform and, instead, leave all unnecessary timers, for example, unused so that the developer has full control over these resources from the application layer.
+The event core is responsible for the low level events, scheduling and system timer functions. The core module provides all the basic functionality that the rest of the modules need (with the exception of the application modules) and is undertaken with a low resource requirement. The design objective has been to reserve and use minimal resources of the hardware platform and, instead, leave all unnecessary timers, for example, unused so that the developer has full control over these resources from the application layer.
 
 The event system provides the application with the tools and functionality that it needs, for example, to post timed events to itself and create events with specific callback functions.
 
-The event system relies on Platform API to provide portable set of functions that it needs. These platform drivers are then ported for each operating system or embedded platform you want to run the 6LoWPAN stack.
+The event system relies on Platform API to provide portable set of functions that it needs. These platform drivers are then ported for each embedded platform you want to run the 6LoWPAN stack.
 
 #### Protocol modules
 
 The 6LoWPAN stack implements a wide range of protocols as individual modules, which is illustrated in _Figure 1-2_. These modules are designed to use an internal data structure that is used to exchange packets. The stack uses a no-copy design wherever possible because in some modules a packet may be copied to provide a re-transmission functionality, as mandated by related standards.
 
-The  modular design of the 6LoWPAN stack allows some modules to be omitted from the build, for example, excluding the _Transmission Control Protocol_ (TCP) module would disable the TCP transport mechanism.
+The modular design of the 6LoWPAN stack allows some modules to be omitted from the build, for example, excluding the _Transmission Control Protocol_ (TCP) module would disable the TCP transport mechanism.
 
 At the upper-edge of the 6LoWPAN stack, the Socket _Application Programming Interface_ (API) is exposed (see _Figure 1-2_). This API is designed to provide a _Berkeley Software Distribution_ (BSD) socket-like interface for the application to receive and transmit packets using standard IPv6 address and port number definitions. The function names also roughly follow the BSD socket definitions with some minor modifications due to the nature of the event environment. The intention is to clearly indicate to the developer that minute differences exist between the embedded socket interface and a full BSD socket interface.
 
@@ -146,38 +161,61 @@ The related standards supported by the stack are:
 
 The 6LoWPAN stack offers application developers programming interfaces for configuring the 6LoWPAN network, defining security levels and sending and receiving packets. The 6LoWPAN stack requires the developers to provide functions for platform specific tasks and network drivers for physical layer. For more information on programming interfaces, see [Mbed Mesh API](../apis/mesh-api.html).
 
-### Operation modes
 
-In 6LoWPAN network, the following roles are described in RFCs:
+## Networking
 
-<dl>
-<dt><b>6LoWPAN Node (6LN)</b></dt>
-<dd>A 6LoWPAN Node is any host or router participating in a network. This term is used when referring to situations in which either a host or router can play the role described.</dd>
+This chapter discusses the networking topology and the protocols used.
 
-<dt><b>6LoWPAN Router (6LR)</b></dt>
-<dd>A node that can route packets. This role is required to form a topological or mesh network.</dd>
+### Networking topology
 
-<dt><b>6LoWPAN Border Router (6LBR)</b></dt>
-<dd>A border router located in between a 6LoWPAN network and IPv6 network. A 6LBR is the responsible authority for IPv6 Prefix propagation for the 6LoWPAN network it is serving.</dd>
-</dl>
+The 6LoWPAN stack uses two types of networking topology, namely the star and tree topologies, as shown in _Figure 1-5_.
 
-A device running a 6LoWPAN stack can be configured in runtime to be in one of the following three modes:
+**Figure 1-5 Networking topologies supported by the 6LoWPAN stack ecosystem**
 
-- Router:
-	- Is effectively a 6LoWPAN Router (6LR).
-	- Routes packets to and from other devices in the network.
-	- Typically always-on, that is, radio always on.
-	- Stack automatically reduces power consumption by placing the processor into sleep when in idle, so that no packets are routed or processed.
-- Host:
-	- Is a 6LoWPAN node (6LN) with no routing capability.
-	- Does not route packets to and from other devices in the network.
-	- Typically RF always on.
-	- Can sleep, but parent router does not cache packets destined to this device.
-- Sleepy host:
-	- Is a 6LoWPAN node (6LN) with no routing capability and utilizes prolonged sleep periods.
-	- Does not route packets to and from other devices in the network.
-	- Typically in sleep for prolonged time periods.
-	- Duty cycle often less than 1%.
-	- Wakes up due to timer trigger or external interrupt, performs some action, polls for data from parent router and goes back to sleep.
-	- An MLE protocol or alternative is required.
-	- May shut down the radio when sleeping.
+![nw-topologies](https://s3-us-west-2.amazonaws.com/mbed-os-docs-images/6lowpan_stack_networking_topologies.png)
+
+### MAC
+
+The _Media Access Control_ (MAC) implementation is based on the IEEE802.15.4-2006 standard and is used for MAC layer communication between nodes such as beacon scans and responses, and data requests and indications. The MAC implementation has already been certified on multiple platforms.
+
+The MAC implements the non-beacon enabled modes of the standard. It does not implement _Guaranteed Time Slot_ (GTS).
+
+### UDP
+
+The 6LoWPAN stack supports the UDP transport protocol. Applications can use the Socket API to send and receive data using UDP sockets. UDP is typically used by applications to deliver short messages over IP. It is an unreliable, connectionless protocol, but can be used for broadcast and multicast messages. The advantage of UDP is that it does not require any kind of connection formation or handshake process to take place prior to communication. UDP is the classic fire-and-forget transport mechanism that combines inherent low reliability, requiring minimal overhead.
+
+A disadvantage of UDP can easily be mitigated by using a simple application layer, end-to-end acknowledgment scheme. As an efficient and scalable example of such a solution, see the _Constrained Application Protocol_(CoAP) _Acknowledgement_ (ACK) mechanism as defined in [CoAP](http://tools.ietf.org/html/rfc7252).
+
+### TCP
+
+The 6LoWPAN stack supports the _Transmission Control Protocol_ (TCP) and applications can use the socket interface APIs of the stack to send and receive data using TCP sockets. Applications requiring a reliable, ordered transport for a stream of bytes can typically use TCP. However, TCP is not suitable for every application because it only supports unicast communication and reacts badly to packet loss. TCP is not suitable for very short transactions because the ratio of overhead to application data typically increases fairly quickly. Additionally, the use of TCP can have very adverse effects on the power consumption of a device because of the duration of the TCP handshake process.
+
+### RPL routing
+
+_Routing Protocol for Low power and Lossy networks_ (RPL) is a distance vector IPv6 routing protocol defined in the _Internet Engineering Task Force_ (IETF) for low power and lossy networks that specifies how to build a _Destination Oriented Directed Acyclic Graph_ (DODAG) using an objective function and a set of metrics and constraints. RPL is optimized for a many-to-one topology. Neighbors keep route records of the edge router as a final destination. The reverse route, or source route, is kept by the edge router and is used for sending data to any node in the network it has a route for. When a node sends a packet to another node, the packet travels up to a common ancestor in the DAG, at which point it is forwarded in the down direction to the destination.
+
+### Automatic network healing process
+
+It is fairly common for the RF channel to change even if the physical location of the actual mesh network has not. The network must then adapt to the new channel immediately and with ease.
+
+The standards that the 6LoWPAN stack uses provide feedback from multiple protocol layers, such as the MAC, network and routing layers. This multiple layer approach provides the stack with numerous sources of information that can be used to make automatic decisions as to when network reconfiguration can be initiated. It can also be delivered to other devices in the IP network using standard _Internet Control Message Protocol_ (ICMP)v6 messages. More specifically, these messages can either be ICMPv6 Destination Unreachable or No Route To Host types.
+
+#### MAC layer
+
+When repeated notifications of _layer two_ (L2) ACKs are not passed up to the higher layers, a possible lost connection has occurred. If the ACK messages are lost from a parent device in the routing topology, this results in one of the following actions: 1) switch to a secondary parent, that is, an alternative parent that has been stored for backup; or 2) the stack should initiate a local network reconfiguration.
+
+If the L2 ACKs are missing from a child node, the routing node typically transmits an ICMPv6 error message to the originator of the packet. If an application on the device itself is the originator, the application is notified of the error using a system event.
+
+### Selecting Radio
+
+6LoWPAN network uses IEEE 802.15.4 radios and therefore, operates on one of the following unlicensed frequency bands:
+
+- 868.0–868.6 MHz: Europe, allows one communication channel (2003, 2006, 2011[4]).
+- 902–928 MHz: North America, up to ten channels (2003), extended to thirty (2006).
+- 2400–2483.5 MHz: worldwide use, up to sixteen channels (2003, 2006).
+
+The data rate varies from 20 kbit/s to 250 kbit/s. Consider the data rate available per node when designing the application. Basically, the data rate is divided between all nodes in the network. Allocate roughly half of the channel capacity for signalling purposes. Each hop requires retransmisson of the packet.
+
+![Datarate](https://s3-us-west-2.amazonaws.com/mbed-os-docs-images/bw.png)
+
+<span class="tips">**Rule of thumb:** The bandwidth per node is divided by the number of nodes in the network and the number of hops.</span>

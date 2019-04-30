@@ -1,8 +1,8 @@
-<h1 id="configuration-mesh">6LoWPAN, Wi-SUN and Thread Mesh</h1>
+<h1 id="configuration-mesh">6LoWPAN Mesh</h1>
 
-This page describes build-time configurable parameters for 6LoWPAN-, Wi-SUN- and Thread-based mesh networks. Mbed OS supports 3 main mesh protocols: 6LoWPAN-ND, Wi-SUN and Thread. Depending on the selected protocol, you can configure different set of values.
+This page describes build-time configurable parameters 6LoWPAN-based mesh networks. Mbed OS supports 3 main mesh protocols: **6LoWPAN-ND**, **Wi-SUN** and **Thread**. Depending on the selected protocol, you can configure different set of values.
 
-There is one mesh-capable stack in Mbed OS called Nanostack.
+6LoWPAN mesh protocols are implemented in Mbed OS library called Nanostack that can be configured.
 
 This guide is divided in sections, and generic Nanostack configurations are first, followed by those for Thread, 6LoWPAN-ND and then Wi-SUN.
 
@@ -11,7 +11,7 @@ For understanding the technologies and APIs, please refer to following sections 
 - [Network connectivity in Mbed OS](../reference/networking.html) technology page.
 - [Thread](../reference/thread-tech.html) technology reference page.
 - [Wi-SUN](../reference/wisun-tech.html) technology reference page.
-- [6LowPAN](../reference/mesh-tech.html) technology reference page.
+- [6LowPAN-ND](../reference/6LoWPAN-ND-tech.html) technology reference page.
 - [Mesh class reference](../apis/mesh-api.html) user API.
 - [Socket API](../apis/network-socket.html).
 
@@ -36,26 +36,27 @@ An example of the configuration file:
 
 ### Build time configuration of the stack
 
-To minimize the size of the produced network stack, Nanostack defines a set of build options.
+To minimize the size of the produced network stack, Nanostack defines a set of build options that are used to compile only needed functionality.
 
 #### Build options for different mesh types
 
 Option name | Features supported | Estimated binary size of Nanostack
 ------------| -------------------|------------------------------------
-`ethernet_host` | Only Ethernet host support, no mesh networking. | 108 kB
-`lowpan_border_router` | 6LoWPAN-ND border router support. | 219 kB
-`lowpan_host` | 6LoWPAN-ND non routing host mode. | 122 kB
-`lowpan_router` | 6LoWPAN-ND routing host mode. | 169 kB
-`nanostack_full` | Everything. This is only for testing purposes. | 355 kB
-`thread_border_router` | Thread router device with border router capability. | 212 kB
-`thread_end_device` | Thread host without routing capability. | 166 kB
-`thread_router` | Thread host with routing capability. | 199 kB
+`ethernet_host` | Only Ethernet host support, no mesh networking. | 80 kB
+`lowpan_border_router` | 6LoWPAN-ND border router support. | 183 kB
+`lowpan_router` | 6LoWPAN-ND routing host mode. | 165 kB
+`lowpan_host` | 6LoWPAN-ND non routing host mode. | 114 kB
+`nanostack_full` | Everything. This is only for testing purposes. | 415 kB
+`thread_border_router` | Thread router device with border router capability. | 216 kB
+`thread_router` | Thread host with routing capability. | 196 kB
+`thread_full_end_device` | Thread host without routing capability. | 181 kB
+`thread_end_device` | Thread host without routing capability. | 152 kB
+`ws_border_router` | Wi-SUN border router support. | 261 kB
+`ws_router` | Wi-SUN router. | 228 kB
 
-<span class="notes">**Note:** The binary sizes have been estimated using GNU Arm Embedded Toolchain version 4.9. They differ based on the toolchains or the status of the repository. The final size can only be estimated when linking the final application. The indicated size only gives you a guideline of what kind of changes to expect between different options.</span>
+<span class="notes">**Note:** The binary sizes have been estimated using Arm Compiler 6.11. They differ based on the toolchains or the status of the repository. The final size can only be estimated when linking the final application. The indicated size only gives you a guideline of what kind of changes to expect between different options.</span>
 
 If you want to optimize the flash usage, you need to configure Nanostack. The configuration to choose depends mostly on the preferred use case.
-
-See the [mesh technology overview](mesh-tech.html) for the definition of star and mesh networks. These same principles apply also to the Wi-SUN and Thread protocols.
 
 Select the protocol the network is based on:
 
@@ -68,7 +69,7 @@ Select the device role:
 - Mesh network. A router. (default)
 - Star network. A nonrouting device, also known as a host or sleepy host.
 
-In the application, choose from two supported interface classes:
+In the application, choose from the following interface classes:
 
 - For 6LoWPAN-ND based network, use `LoWPANNDInterface`.
 - For Wi-SUN FAN based network, use `WisunInterface`.
@@ -241,7 +242,7 @@ Name: mbed-mesh-api.thread-use-static-link-config
     Value: 1 (set by library:mbed-mesh-api)
 ```
 
-### 6LoWPAN related configuration parameters
+### 6LoWPAN-ND related configuration parameters
 
 The following parameters are only valid for the 6LoWPAN-ND mesh network. These are in use when the application uses the `LoWPANNDInterface` class.
 
